@@ -546,36 +546,47 @@ if (isTouchDevice()) {
 }
 
 
-/* ===== FINAL MOBILE CANVAS FRAME FIX ===== */
+/* ===== FIX: Reliable Mobile Frame Rendering ===== */
 if (isTouchDevice()) {
-  // Kill any old triggers
-  ScrollTrigger.getAll().forEach(t => t.kill());
+  let loadedImages = 0;
 
-  // Create new one for native scroll
-  gsap.to(imageSeq, {
-    frame: frameCount - 1,
-    snap: "frame",
-    ease: "none",
-    scrollTrigger: {
+  images.forEach(img => {
+    img.onload = () => {
+      loadedImages++;
+      if (loadedImages === frameCount) {
+        console.log("✅ All frames loaded on mobile, initializing animation...");
+        initMobileScrollAnimation();
+      }
+    };
+  });
+
+  function initMobileScrollAnimation() {
+    ScrollTrigger.getAll().forEach(t => t.kill());
+
+    gsap.to(imageSeq, {
+      frame: frameCount - 1,
+      snap: "frame",
+      ease: "none",
+      scrollTrigger: {
+        trigger: "#page>canvas",
+        start: "top top",
+        end: "400% top",
+        scrub: 1.5,
+        scroller: window,
+        invalidateOnRefresh: true
+      },
+      onUpdate: render
+    });
+
+    ScrollTrigger.create({
       trigger: "#page>canvas",
       start: "top top",
       end: "400% top",
-      scrub: 1.2,
-      scroller: window, // native scroll
-      invalidateOnRefresh: true
-    },
-    onUpdate: render
-  });
+      pin: true,
+      scrub: true,
+      scroller: window
+    });
 
-  // Ensure canvas pinned correctly
-  ScrollTrigger.create({
-    trigger: "#page>canvas",
-    start: "top top",
-    end: "400% top",
-    pin: true,
-    scrub: true,
-    scroller: window
-  });
-
-  console.log("✅ Mobile scroll animation reinitialized with native ScrollTrigger.");
+    console.log("✅ Mobile canvas animation initialized successfully.");
+  }
 }
