@@ -544,3 +544,38 @@ if (isTouchDevice()) {
   });
   console.log('Services section made visible on mobile.');
 }
+
+
+/* ===== FINAL MOBILE CANVAS FRAME FIX ===== */
+if (isTouchDevice()) {
+  // Kill any old triggers
+  ScrollTrigger.getAll().forEach(t => t.kill());
+
+  // Create new one for native scroll
+  gsap.to(imageSeq, {
+    frame: frameCount - 1,
+    snap: "frame",
+    ease: "none",
+    scrollTrigger: {
+      trigger: "#page>canvas",
+      start: "top top",
+      end: "400% top",
+      scrub: 1.2,
+      scroller: window, // native scroll
+      invalidateOnRefresh: true
+    },
+    onUpdate: render
+  });
+
+  // Ensure canvas pinned correctly
+  ScrollTrigger.create({
+    trigger: "#page>canvas",
+    start: "top top",
+    end: "400% top",
+    pin: true,
+    scrub: true,
+    scroller: window
+  });
+
+  console.log("✅ Mobile scroll animation reinitialized with native ScrollTrigger.");
+}
